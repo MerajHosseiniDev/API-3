@@ -46,6 +46,7 @@ func (app *App) handleRouters() {
 	app.Router.HandleFunc("/homepage", app.homepage)
 	app.Router.HandleFunc("/movies", app.getMovies).Methods("GET")
 	app.Router.HandleFunc("/movies/{id}", app.getMovie).Methods("GET")
+	app.Router.HandleFunc("/movies", app.createMovie).Methods("POST")
 
 }
 
@@ -95,6 +96,20 @@ func (app *App) getMovie(w http.ResponseWriter, r * http.Request) {
 			sendError(w, http.StatusInternalServerError, err.Error())
 		}
 		return
+	}
+	sendResponse(w, http.StatusOK, m)
+}
+
+func (app *App) createMovie(w http.ResponseWriter, r * http.Request) {
+	var m Movie
+	err := json.NewDecoder(r.Body).Decode(&m)
+	if err !=nil {
+		sendError(w, http.StatusBadRequest, "invalid request payload")
+		return
+	}
+	err = m.createMovie(app.DB) 
+	if err != nil {
+		sendError(w, http.StatusInternalServerError, err.Error())
 	}
 	sendResponse(w, http.StatusOK, m)
 }

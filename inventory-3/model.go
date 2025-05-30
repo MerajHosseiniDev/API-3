@@ -36,3 +36,17 @@ func (m *Movie) getMovie(db *sql.DB) error {
 	}
 	return err
 }
+
+func (m *Movie) createMovie(db *sql.DB) error {
+	query := "INSERT INTO movies(name, quantity, price) VALUES(?, ?, ?)"
+	result, err := db.Exec(query, m.Name, m.Quantity, m.Price)
+	if err != nil {
+		return err
+	}
+	id, err :=  result.LastInsertId()
+	if err !=nil {
+		return err
+	}
+	m.Id = int(id)
+	return nil
+}

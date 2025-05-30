@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -44,6 +45,8 @@ func (app *App) Run(address string) {
 func (app *App) handleRouters() {
 	app.Router.HandleFunc("/homepage", app.homepage)
 	app.Router.HandleFunc("/movies", app.getMovies).Methods("GET")
+	app.Router.HandleFunc("/movies/{id}", app.getMovie).Methods("GET")
+
 }
 
 func sendError(w http.ResponseWriter, statusCode int, err string) {
@@ -73,4 +76,25 @@ func (app *App) getMovies(w http.ResponseWriter, r *http.Request) {
 		sendError(w, http.StatusInternalServerError, err.Error())
 	}
 	sendResponse(w, http.StatusOK, movies)
+}
+
+func (app *App) getMovie(w http.ResponseWriter, r * http.Request) {
+	vars := mux.Vars(r)
+	key, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		sendError(w, http.StatusBadRequest, "invalid movie id")
+		return
+	}
+	m := Movie{Id: key}
+	err = m.getMovies(app.DB)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			sendError(w, http.StatusNotFound, "movie not found")
+		default:
+			sendError(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+	sendResponse(w, http.StatusOK, m)
 }

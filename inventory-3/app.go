@@ -47,7 +47,8 @@ func (app *App) handleRouters() {
 	app.Router.HandleFunc("/movies", app.getMovies).Methods("GET")
 	app.Router.HandleFunc("/movies/{id}", app.getMovie).Methods("GET")
 	app.Router.HandleFunc("/movies", app.createMovie).Methods("POST")
-
+	app.Router.HandleFunc("/movies/{id}", app.updateMovie).Methods("PUT")
+	app.Router.HandleFunc("/movies/{id}", app.deleteMovie).Methods("DELETE")
 }
 
 func sendError(w http.ResponseWriter, statusCode int, err string) {
@@ -112,4 +113,41 @@ func (app *App) createMovie(w http.ResponseWriter, r * http.Request) {
 		sendError(w, http.StatusInternalServerError, err.Error())
 	}
 	sendResponse(w, http.StatusOK, m)
+}
+
+func (app *App) updateMovie(w http.ResponseWriter, r * http.Request) {
+	vars := mux.Vars(r)
+	key, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		sendError(w, http.StatusBadRequest, "invalid movie id")
+		return
+	}
+	var m Movie
+	err = json.NewDecoder(r.Body).Decode(&m)
+	if err != nil {
+		sendError(w, http.StatusBadRequest, "invalid payload request")
+	}
+	m.Id = key
+	err = m.updateMovie(app.DB)
+	if err != nil {
+		sendError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	sendResponse(w, http.StatusOK, m)
+}
+
+func (app *App) deleteMovie(w http.ResponseWriter, r * http.Request) {
+	vars := mux.Vars(r)
+	key, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		sendError(w, http.StatusBadRequest, "invalid movie id")
+		return
+	}
+	m := Movie{Id: key}
+	err = m.deleteMovie(app.DB)
+	if err != nil {
+		sendError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	sendResponse(w, http.StatusOK, map[string]string{"result": "successful delection"})
 }

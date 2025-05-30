@@ -1,6 +1,9 @@
 package main
 
-import "database/sql"
+import (
+	"database/sql"
+	"errors"
+)
 
 type Movie struct {
 	Id       int     `json:"id"`
@@ -49,4 +52,26 @@ func (m *Movie) createMovie(db *sql.DB) error {
 	}
 	m.Id = int(id)
 	return nil
+}
+
+func (m *Movie) updateMovie(db *sql.DB) error {
+	query := "UPDATE movies SET name = ?, quantity = ?, price = ? WHERE id = ?"
+	result, err := db.Exec(query, m.Name, m.Quantity, m.Price, m.Id)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err !=nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return errors.New("not such rows exists")
+	}
+	return err
+}
+
+func (m *Movie) deleteMovie(db *sql.DB) error {
+	query := "DELETE FROM movies WHERE id = ?"
+	_, err := db.Exec(query, m.Id)
+	return err
 }

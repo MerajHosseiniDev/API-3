@@ -86,7 +86,7 @@ func (app *App) getMovie(w http.ResponseWriter, r * http.Request) {
 		return
 	}
 	m := Movie{Id: key}
-	err = m.getMovies(app.DB)
+	err = m.getMovie(app.DB)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:

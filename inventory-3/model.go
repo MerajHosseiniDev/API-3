@@ -27,8 +27,8 @@ func getMovies(db *sql.DB) ([]Movie, error) {
 	return movies, nil
 }
 
-func (m *Movie) getMovies(db *sql.DB) error {
-	query := "SELECT name, quantity, price WHERE id = ?"
+func (m *Movie) getMovie(db *sql.DB) error {
+	query := "SELECT name, quantity, price FROM movies WHERE id = ?"
 	rows := db.QueryRow(query, m.Id)
 	err := rows.Scan(&m.Name, &m.Quantity, &m.Price)
 	if err != nil {

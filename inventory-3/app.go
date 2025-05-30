@@ -42,8 +42,8 @@ func (app *App) Run(address string) {
 
 
 func (app *App) handleRouters() {
-	app.Router.HandleFunc("homepage", app.homepage)
-	app.Router.HandleFunc("movies", app.getMovies).Methods("GET")
+	app.Router.HandleFunc("/homepage", app.homepage)
+	app.Router.HandleFunc("/movies", app.getMovies).Methods("GET")
 }
 
 func sendError(w http.ResponseWriter, statusCode int, err string) {
@@ -62,10 +62,15 @@ func sendResponse(w http.ResponseWriter, statusCode int, payLoad interface{}) {
 }
 
 func (app *App) homepage(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "text/plain")
 	fmt.Fprintln(w, "welcome to movies Home Page!")
-	log.Panicln("endpint hit: homepage")
+	log.Println("endpint hit: homepage")
 }
 
 func (app *App) getMovies(w http.ResponseWriter, r *http.Request) {
-	
+	movies, err := getMovies(app.DB)
+	if err != nil {
+		sendError(w, http.StatusInternalServerError, err.Error())
+	}
+	sendResponse(w, http.StatusOK, movies)
 }
